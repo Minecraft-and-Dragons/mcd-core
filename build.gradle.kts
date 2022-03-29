@@ -8,9 +8,12 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
+    implementation("com.github.Minestom:Minestom:244f8785ff")
+
     implementation("org.jetbrains:annotations:23.0.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
