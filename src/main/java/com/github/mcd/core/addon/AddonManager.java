@@ -48,7 +48,7 @@ public class AddonManager {
     private final Map<String, DungeonsAddon> addons = new LinkedHashMap<>();
     private final Map<String, DungeonsAddon> immutableAddons = Collections.unmodifiableMap(addons);
 
-    private final Path addonFolder = Paths.get("addons/MCD/addons"); // todo we should probably pass this in
+    private final Path addonFolder = Paths.get("extensions/MCD/addons"); // todo we should probably pass this in
     private Path addonDataRoot = addonFolder;
 
     public AddonManager(ServerProcess serverProcess) {
@@ -233,35 +233,6 @@ public class AddonManager {
             return null;
         }
 
-        // Set logger
-        try {
-            Field loggerField = DungeonsAddon.class.getDeclaredField("logger");
-            loggerField.setAccessible(true);
-            loggerField.set(addon, LoggerFactory.getLogger(addonClass));
-        } catch (IllegalAccessException e) {
-            // We made it accessible, should not occur
-            serverProcess.exception().handleException(e);
-        } catch (NoSuchFieldException e) {
-            // This should also not occur (unless someone changed the logger in Addon superclass).
-            LOGGER.error("Main class '{}' in '{}' has no logger field.", mainClass, addonName, e);
-        }
-
-        // Set event node
-        try {
-            EventNode<Event> eventNode = EventNode.all(addonName); // Use the addon name
-            Field loggerField = DungeonsAddon.class.getDeclaredField("eventNode");
-            loggerField.setAccessible(true);
-            loggerField.set(addon, eventNode);
-
-            serverProcess.eventHandler().addChild(eventNode);
-        } catch (IllegalAccessException e) {
-            // We made it accessible, should not occur
-            serverProcess.exception().handleException(e);
-        } catch (NoSuchFieldException e) {
-            // This should also not occur
-            LOGGER.error("Main class '{}' in '{}' has no event node field.", mainClass, addonName, e);
-        }
-
         // add to a linked hash map, as they preserve order
         addons.put(addonName.toLowerCase(), addon);
 
@@ -282,10 +253,13 @@ public class AddonManager {
         // Attempt to find all the addons
         try {
             Files.list(addonFolder)
-                .filter(file -> file != null &&
-                    !Files.isDirectory(file) &&
-                    file.getFileName().toString().endsWith(".jar"))
+                .peek(path -> System.out.println("A: " + path))
+                .filter(path -> path != null &&
+                    !Files.isDirectory(path) &&
+                    path.getFileName().toString().endsWith(".jar"))
+                .peek(path -> System.out.println("B: " + path))
                 .map(this::discoverFromJar)
+                .peek(addon -> System.out.println("C: " + addon))
                 .filter(ext -> ext != null && ext.loadStatus == DiscoveredAddon.LoadStatus.LOAD_SUCCESS)
                 .forEach(addons::add);
         } catch (IOException e) {

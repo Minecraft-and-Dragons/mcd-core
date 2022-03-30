@@ -12,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Represents an extension from an `extension.json` that is capable of powering an Extension object.
+ * Represents an addon from an `addon.json` that is capable of powering an Addon object.
  * <p>
  * This has no constructor as its properties are set via GSON.
  *
@@ -35,21 +35,23 @@ public final class DiscoveredAddon {
     private String name;
 
     /**
-     * Main class of this DiscoveredAddon, must extend Extension.
+     * Main class of this DiscoveredAddon, must extend Addon.
      */
     private String entrypoint;
+
+    private String scannedPackage;
 
     private String version;
 
     private String[] authors;
 
     /**
-     * All files of this extension
+     * All files of this addon
      */
     transient List<URL> files = new LinkedList<>();
 
     /**
-     * The load status of this extension -- LOAD_SUCCESS is the only good one.
+     * The load status of this addon -- LOAD_SUCCESS is the only good one.
      */
     transient LoadStatus loadStatus = LoadStatus.LOAD_SUCCESS;
 
@@ -73,6 +75,10 @@ public final class DiscoveredAddon {
         return entrypoint;
     }
 
+    public String getScannedPackage() {
+        return this.scannedPackage;
+    }
+
     @NotNull
     public String getVersion() {
         return version;
@@ -93,7 +99,7 @@ public final class DiscoveredAddon {
     }
 
     void createClassLoader() {
-        Check.stateCondition(classLoader != null, "Extension classloader has already been created");
+        Check.stateCondition(classLoader != null, "Addon classloader has already been created");
         final URL[] urls = this.files.toArray(new URL[0]);
         classLoader = new AddonClassLoader(this.getName(), urls);
     }
@@ -104,61 +110,61 @@ public final class DiscoveredAddon {
     }
 
     /**
-     * Ensures that all properties of this extension are properly set if they aren't
+     * Ensures that all properties of this addon are properly set if they aren't
      *
-     * @param extension The extension to verify
+     * @param addon The addon to verify
      */
-    public static void verifyIntegrity(@NotNull DiscoveredAddon extension) {
-        if (extension.name == null) {
+    public static void verifyIntegrity(@NotNull DiscoveredAddon addon) {
+        if (addon.name == null) {
             StringBuilder fileList = new StringBuilder();
-            for (URL f : extension.files) {
+            for (URL f : addon.files) {
                 fileList.append(f.toExternalForm()).append(", ");
             }
-            LOGGER.error("Extension with no name. (at {}})", fileList);
-            LOGGER.error("Extension at ({}) will not be loaded.", fileList);
-            extension.loadStatus = DiscoveredAddon.LoadStatus.INVALID_NAME;
+            LOGGER.error("Addon with no name. (at {}})", fileList);
+            LOGGER.error("Addon at ({}) will not be loaded.", fileList);
+            addon.loadStatus = DiscoveredAddon.LoadStatus.INVALID_NAME;
 
             // To ensure @NotNull: name = INVALID_NAME
-            extension.name = extension.loadStatus.name();
+            addon.name = addon.loadStatus.name();
             return;
         }
 
-        if (!extension.name.matches(NAME_REGEX)) {
-            LOGGER.error("Extension '{}' specified an invalid name.", extension.name);
-            LOGGER.error("Extension '{}' will not be loaded.", extension.name);
-            extension.loadStatus = DiscoveredAddon.LoadStatus.INVALID_NAME;
+        if (!addon.name.matches(NAME_REGEX)) {
+            LOGGER.error("Addon '{}' specified an invalid name.", addon.name);
+            LOGGER.error("Addon '{}' will not be loaded.", addon.name);
+            addon.loadStatus = DiscoveredAddon.LoadStatus.INVALID_NAME;
 
             // To ensure @NotNull: name = INVALID_NAME
-            extension.name = extension.loadStatus.name();
+            addon.name = addon.loadStatus.name();
             return;
         }
 
-        if (extension.entrypoint == null) {
-            LOGGER.error("Extension '{}' did not specify an entry point (via 'entrypoint').", extension.name);
-            LOGGER.error("Extension '{}' will not be loaded.", extension.name);
-            extension.loadStatus = DiscoveredAddon.LoadStatus.NO_ENTRYPOINT;
+        if (addon.entrypoint == null) {
+            LOGGER.error("Addon '{}' did not specify an entry point (via 'entrypoint').", addon.name);
+            LOGGER.error("Addon '{}' will not be loaded.", addon.name);
+            addon.loadStatus = DiscoveredAddon.LoadStatus.NO_ENTRYPOINT;
 
             // To ensure @NotNull: entrypoint = NO_ENTRYPOINT
-            extension.entrypoint = extension.loadStatus.name();
+            addon.entrypoint = addon.loadStatus.name();
             return;
         }
 
         // Handle defaults
-        // If we reach this code, then the extension will most likely be loaded:
-        if (extension.version == null) {
-            LOGGER.warn("Extension '{}' did not specify a version.", extension.name);
-            LOGGER.warn("Extension '{}' will continue to load but should specify a plugin version.", extension.name);
-            extension.version = "Unspecified";
+        // If we reach this code, then the addon will most likely be loaded:
+        if (addon.version == null) {
+            LOGGER.warn("Addon '{}' did not specify a version.", addon.name);
+            LOGGER.warn("Addon '{}' will continue to load but should specify a plugin version.", addon.name);
+            addon.version = "Unspecified";
         }
 
-        if (extension.authors == null) {
-            extension.authors = new String[0];
+        if (addon.authors == null) {
+            addon.authors = new String[0];
         }
 
     }
 
     /**
-     * The status this extension has, all are breakpoints.
+     * The status this addon has, all are breakpoints.
      * <p>
      * LOAD_SUCCESS is the only valid one.
      */
@@ -166,7 +172,7 @@ public final class DiscoveredAddon {
         LOAD_SUCCESS("Actually, it did not fail. This message should not have been printed."),
         INVALID_NAME("Invalid name."),
         NO_ENTRYPOINT("No entrypoint specified."),
-        FAILED_TO_SETUP_CLASSLOADER("Extension classloader could not be setup."),
+        FAILED_TO_SETUP_CLASSLOADER("Addon classloader could not be setup."),
         LOAD_FAILED("Load failed. See logs for more information."),
         ;
 

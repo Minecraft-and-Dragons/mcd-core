@@ -1,7 +1,6 @@
 package com.github.mcd.core.addon;
 
 import com.github.mcd.core.model.race.Race;
-import net.minestom.server.extensions.DiscoveredExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -10,10 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,7 +33,7 @@ public abstract class DungeonsAddon {
     }
 
     /**
-     * Gets a resource from inside the extension jar.
+     * Gets a resource from inside the addon jar.
      * <p>
      * The caller is responsible for closing the returned {@link InputStream}.
      *
@@ -60,7 +56,7 @@ public abstract class DungeonsAddon {
     }
 
     /**
-     * Gets a resource from inside the extension jar.
+     * Gets a resource from inside the addon jar.
      * <p>
      * The caller is responsible for closing the returned {@link InputStream}.
      *
