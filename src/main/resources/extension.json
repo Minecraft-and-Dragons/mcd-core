@@ -1,5 +1,5 @@
 {
-  "entrypoint": "com.github.mcd.core.DungeonsExtensions",
-  "name": "Minecraft-And-Dragons",
+  "entrypoint": "com.github.mcd.core.DungeonsExtension",
+  "name": "MCD",
   "version": "1.0.0"
 }
