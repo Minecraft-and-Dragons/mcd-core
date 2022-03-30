@@ -253,13 +253,10 @@ public class AddonManager {
         // Attempt to find all the addons
         try {
             Files.list(addonFolder)
-                .peek(path -> System.out.println("A: " + path))
                 .filter(path -> path != null &&
                     !Files.isDirectory(path) &&
                     path.getFileName().toString().endsWith(".jar"))
-                .peek(path -> System.out.println("B: " + path))
                 .map(this::discoverFromJar)
-                .peek(addon -> System.out.println("C: " + addon))
                 .filter(ext -> ext != null && ext.loadStatus == DiscoveredAddon.LoadStatus.LOAD_SUCCESS)
                 .forEach(addons::add);
         } catch (IOException e) {
